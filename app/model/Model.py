@@ -1,11 +1,10 @@
-from datetime import datetime
+from pydantic import BaseModel
 
-from pydantic.dataclasses import dataclass
-
-
-@dataclass
-class AgentDetails:
+class AgentDetails(BaseModel):
     id: int
     agent_name: str
     system_prompt: str
     user_prompt: str
+    
+class TaskManagerClassification(BaseModel):
+    category: str
