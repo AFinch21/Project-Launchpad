@@ -1,31 +1,34 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, relationship, Mapped, mapped_column
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.dialects.postgresql import UUID
 from typing import List
-from typing import Optional
-from sqlalchemy import ForeignKey
-from sqlalchemy import String
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy.orm import Mapped
-from sqlalchemy.orm import mapped_column
-from sqlalchemy.orm import relationship
 
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
-class User(Base):
-    __tablename__ = "user_account"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(30))
-    fullname: Mapped[Optional[str]]
-    addresses: Mapped[List["Address"]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
+class Agent(Base):
+    __tablename__ = "agents"
+    
+    agent_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    agent_name: Mapped[str] = mapped_column(String)
+    system_prompt: Mapped[str] = mapped_column(String)
+    user_prompt: Mapped[str] = mapped_column(String)
+
+    # Correctly annotated relationship with Mapped
+    requests: Mapped[List['UserRequest']] = relationship("UserRequest", back_populates="agent")
+
     def __repr__(self) -> str:
-        return f"User(id={self.id!r}, name={self.name!r}, fullname={self.fullname!r})"
+        return f"Agent(agent_id={self.agent_id!r}, agent_name={self.agent_name!r}, system_prompt={self.system_prompt!r}, user_prompt={self.user_prompt!r})"
 
-class Address(Base):
-    __tablename__ = "address"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    email_address: Mapped[str]
-    user_id: Mapped[int] = mapped_column(ForeignKey("user_account.id"))
-    user: Mapped["User"] = relationship(back_populates="addresses")
+class UserRequest(Base):
+    __tablename__ = "user_requests"
+    
+    request_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    agent_id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), ForeignKey('agents.agent_id'))
+    user_input: Mapped[str] = mapped_column(String)
+
+    # Relationship to Agent
+    agent: Mapped[Agent] = relationship("Agent", back_populates="requests")
+
     def __repr__(self) -> str:
-        return f"Address(id={self.id!r}, email_address={self.email_address!r})"
+        return f"UserRequest(request_id={self.request_id!r}, agent_id={self.agent_id!r}, user_input={self.user_input!r})"
