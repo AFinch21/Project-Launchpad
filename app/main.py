@@ -1,19 +1,32 @@
 from fastapi import FastAPI
 from pathlib import Path
-from utilities.AgentArchetype import Agent, TaskManager
+from database.engine import get_db
+from database.operations import get_agents, get_prompts
+from utilities.AgentArchetype import Agent
+from utilities.AgentInitialisation import iniatialise_agents
 import os
 
 app = FastAPI()
 
+db = get_db()
+
+agent_data = get_agents(db)
+
+agent_pod = iniatialise_agents(agent_data)
+
+print(agent_pod)
+print(agent_pod[0].agent_name)
+print(agent_pod[0].system_prompt)
+print(agent_pod[1].agent_name)
+print(agent_pod[1].system_prompt)
+
+
+
 @app.get("/createagent")
 async def create_agent(agent_name: str):
-    print(os.environ.get('OPEN_AI_API_KEY'))
-    agent = TaskManager(
-        agent_id = 'test',
-        agent_name= agent_name,
-        api_key = os.environ.get('OPEN_AI_API_KEY')
-    )
+    pass
     
-    print(agent.agent_name)
-    print(agent.agent_id)
-    print(agent.get_response(agent_name))
+@app.get("/execute_task")
+async def execute_task(user_input: str):
+    
+    pass
